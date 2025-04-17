@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:18'
-      args '-u root:root'  // ensure permission to install globally if needed
-    }
-  }
+  agent any
 
   environment {
     SLACK_WEBHOOK = credentials('SLACK_WEBHOOK_URL')
@@ -18,21 +13,17 @@ pipeline {
       }
     }
 
-    stage('Install') {
+    stage('Test in Node.js') {
+      agent {
+        docker {
+          image 'node:18'
+          args '-u root:root'
+        }
+      }
       steps {
         sh 'npm install'
-      }
-    }
-
-    stage('Test & AI RCA') {
-      steps {
-        script {
-          def status = sh(script: 'npm test || true', returnStatus: true)
-          if (status != 0) {
-            echo "❌ Tests failed. Triggering AI remediation..."
-            sh 'bash ai-remediation.sh'
-          }
-        }
+        sh 'npm test || true'
+        sh 'bash ai-remediation.sh || true'
       }
     }
   }
