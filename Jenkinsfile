@@ -1,5 +1,6 @@
 pipeline {
   agent any
+
   environment {
     SLACK_WEBHOOK = credentials('SLACK_WEBHOOK_URL')
     HUGGINGFACE_API_KEY = credentials('HUGGINGFACE_API_KEY')
@@ -8,14 +9,17 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/EmergencyTechOps/self-healing-ci.git'
+        // Pull the latest code from main or master
+        git branch: 'main', url: 'https://github.com/EmergencyTechOps/self-healing-ci.git'
       }
     }
+
     stage('Install') {
       steps {
         sh 'npm install'
       }
     }
+
     stage('Test') {
       steps {
         script {
