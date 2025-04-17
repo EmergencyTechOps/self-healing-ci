@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'node:18'
+      args '-u root:root'  // ensure permission to install globally if needed
+    }
+  }
 
   environment {
     SLACK_WEBHOOK = credentials('SLACK_WEBHOOK_URL')
@@ -13,14 +18,14 @@ pipeline {
       }
     }
 
-    stage('Build & Test in Node.js Container') {
-      agent {
-        docker {
-          image 'node:18'
-        }
-      }
+    stage('Install') {
       steps {
         sh 'npm install'
+      }
+    }
+
+    stage('Test & AI RCA') {
+      steps {
         script {
           def status = sh(script: 'npm test || true', returnStatus: true)
           if (status != 0) {
