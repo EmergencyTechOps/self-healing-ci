@@ -9,19 +9,18 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        // Pull the latest code from main or master
         git branch: 'main', url: 'https://github.com/EmergencyTechOps/self-healing-ci.git'
       }
     }
 
-    stage('Install') {
+    stage('Build & Test in Node.js Container') {
+      agent {
+        docker {
+          image 'node:18'
+        }
+      }
       steps {
         sh 'npm install'
-      }
-    }
-
-    stage('Test') {
-      steps {
         script {
           def status = sh(script: 'npm test || true', returnStatus: true)
           if (status != 0) {
